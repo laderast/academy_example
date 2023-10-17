@@ -28,6 +28,15 @@ After this lesson, you should be able to:
 vembedr::embed_youtube("MBFXgfzYCjw")
 ```
 
+```{bash}
+#| eval: false
+#| echo: true
+dx find data --brief --name *.bam | \
+  xargs -I% sh -c \ 
+  'dx run app-swiss-army-knife \
+   -iin="%" -icmd="sambamba index \${in_name}"'
+```
+
 ```{mermaid}
 %%| fig-width: 5
 %%| fig-cap: The Basic Recipe for Batch Processing
@@ -50,14 +59,14 @@ Today, we'll talk about a straightforward way to process files: using `dx find d
 vembedr::embed_youtube("BuIPCTj9gjs")
 ```
 
-We can use `dx find data` to generate lists of file ids to process using the `--brief` option.
+We can use `dx find data` to generate lists of file ids to process using the `--brief` option. If we don't use the `--brief` option, then the output is much like `dx ls`: a directory listing with additional information.
 
 For example, if we run: 
 
 ```{bash}
 #| eval: false
 #| echo: true
-dx find data --brief --name *.bam
+dx find data --brief --name "*.bam"
 ```
 
 It produces the output:
@@ -68,6 +77,12 @@ project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGpj0x05xKxZ42QPqZkJY
 project-GJ496B00FZfxPV5VG36FybvY:file-BQbXVY0093Jk1KVY1J082y7v
 project-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV
 ```
+ 
+:::{.callout}
+## Don't Forget the Quotes!
+
+Note that the value for the `--name` option is in quotes. If you try to use `dx find data` without using quotes, it will not return anything.
+:::
  
 ## `xargs`
 
@@ -96,6 +111,13 @@ file: project-GJ496B00FZfxPV5VG36FybvY:file-BQbXVY0093Jk1KVY1J082y7v
 file: project-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV
 ```
 
+:::{.callout}
+## `xargs` and quotes
+
+We'll use 
+:::
+
+
 ## `dx run`
 
 ```{r echo=FALSE}
@@ -105,7 +127,25 @@ vembedr::embed_youtube("wXcr0AOxdlw")
 
 Let's first talk about `dx run` and running a special app on the platform called Swiss Army Knife. This is a general purpose app for genomics and bioinformatics work. It contains a lot of the utilities that you are used to, such as PLINK and bcftools. We'll put a link in the description to the documentation.
 
-We can start running swiss army knife with `dx run`:
+We can run a single job with Swiss Army Knife using a `dx run` statement.
+
+```{bash}
+#| eval: false
+#| echo: true
+dx run app-swiss-army-knife \
+  -iin="/data/NA12878.bam" \
+  -icmd="sambamba index \${in_name}"
+```
+
+:::{.callout}
+## Inputs to an App: `-i`
+
+Note that the inputs to Swiss army knife and other apps on the platform are specified with a single dash (`-iin` or `-icmd`), rather than the double dash you may be used to for other command line options.
+:::
+
+When we integrate it into our recipe, we'll switch out our file name (`/data/NA12878.bam`) with our placeholder (`%`). We'll also enclose our statement with double quotes.
+
+The last thing to note is that in our `cmd` input, we escape our `$` for our variable: `\$`. This will evaluate to `$in_name` by our bash shell, which can then be used by Swiss Army Knife.
 
 ```{bash}
 #| eval: false
@@ -115,12 +155,40 @@ We can start running swiss army knife with `dx run`:
   -icmd="sambamba index \${in_name}"'
 ```
 
-## What You Learned
+:::{.callout}
+## Bash Helper Variables
+
+When we specify inputs for an app, there are a number of helper variables we can use. For our one input `-iin="data/NA12878.bam"`, this is what these helper variables contain:
+
+| Bash Variable | Value | Notes |
+|---------------|-------|-------|
+| `$in`         | `data/NA12878.bam` | Location in project storage |
+| `$in_path`    | `~/NA12878.bam` | Location in worker storage |
+| `$in_name`    | `NA12878.bam` | File name (without folder path) |
+| `$in_prefix`  | `NA12878` | File name without the suffix |
+
+These variables are super helpful when specifying file names. `$_prefix` is especially helpful when we want to name our output with a different extension, but the same prefix (such as `NA12845.bam` and `NA12845.bai`).
+:::
+
+## Putting it All Together
 
 ```{r}
 #| echo: false
 vembedr::embed_youtube("vjVS8QLDhAw")
 ```
+
+Let's put everything together. We can now see what each piece of the recipe does.
+
+```{bash}
+#| eval: false
+#| echo: true
+dx find data --brief --name *.bam | \
+  xargs -I% sh -c \ 
+  'dx run app-swiss-army-knife \
+   -iin="%" -icmd="sambamba index \${in_name}"'
+```
+
+## What Your Learned
 
 - A basic recipe for batch processing
 - The role of `dx find data`, `xargs` and `dx run` in this recipe

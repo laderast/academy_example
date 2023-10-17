@@ -18,28 +18,28 @@
     "href": "index.html#the-basic-recipe",
     "title": "Running Batch Jobs on the DNAnexus Platform",
     "section": "The Basic Recipe",
-    "text": "The Basic Recipe\n\n\n\n\n\n\n\n\n\n\n\n\n\ngraph LR;\n  A[List files &lt;/br&gt; using `dx data`] --&gt; F{\"|\"}\n  F --&gt; E[`xargs` sh -c]\n  E --&gt; B[`dx run` &lt;/br&gt; on file1];\n  E --&gt; C[`dx run` &lt;/br&gt; on file2];\n  E --&gt; D[`dx run` &lt;/br&gt; on file3];\n\n\nThe Basic Recipe for Batch Processing\n\n\n\nLet’s learn about batch processing on the DNAnexus platform. When we talk about batch processing, we’ll process files within a project on the platform. We can cycle through a set of BAM files and filter out variants, for example.\nToday, we’ll talk about a straightforward way to process files: using dx find data to find a list of data files with our criteria, and then use dx run with an app called Swiss army knife."
+    "text": "The Basic Recipe\n\n\n\n\n\n\n\n\n\n\ndx find data --brief --name *.bam | \\\n  xargs -I% sh -c \\ \n  'dx run app-swiss-army-knife \\\n   -iin=\"%\" -icmd=\"sambamba index \\${in_name}\"'\n\n\n\n\n\ngraph LR;\n  A[List files &lt;/br&gt; using `dx data`] --&gt; F{\"|\"}\n  F --&gt; E[`xargs` sh -c]\n  E --&gt; B[`dx run` &lt;/br&gt; on file1];\n  E --&gt; C[`dx run` &lt;/br&gt; on file2];\n  E --&gt; D[`dx run` &lt;/br&gt; on file3];\n\n\nThe Basic Recipe for Batch Processing\n\n\n\nLet’s learn about batch processing on the DNAnexus platform. When we talk about batch processing, we’ll process files within a project on the platform. We can cycle through a set of BAM files and filter out variants, for example.\nToday, we’ll talk about a straightforward way to process files: using dx find data to find a list of data files with our criteria, and then use dx run with an app called Swiss army knife."
   },
   {
     "objectID": "index.html#dx-find-data",
     "href": "index.html#dx-find-data",
     "title": "Running Batch Jobs on the DNAnexus Platform",
     "section": "dx find data",
-    "text": "dx find data\n\n\n\n\n\n\n\n\n\nWe can use dx find data to generate lists of file ids to process using the --brief option.\nFor example, if we run:\n\ndx find data --brief --name *.bam\n\nIt produces the output:\nproject-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGzj0x05b66kqQv51011q\nproject-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGpj0x05xKxZ42QPqZkJY\nproject-GJ496B00FZfxPV5VG36FybvY:file-BQbXVY0093Jk1KVY1J082y7v\nproject-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV"
+    "text": "dx find data\n\n\n\n\n\n\n\n\n\nWe can use dx find data to generate lists of file ids to process using the --brief option. If we don’t use the --brief option, then the output is much like dx ls: a directory listing with additional information.\nFor example, if we run:\n\ndx find data --brief --name \"*.bam\"\n\nIt produces the output:\nproject-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGzj0x05b66kqQv51011q\nproject-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGpj0x05xKxZ42QPqZkJY\nproject-GJ496B00FZfxPV5VG36FybvY:file-BQbXVY0093Jk1KVY1J082y7v\nproject-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV\n\n\n\n\n\n\nDon’t Forget the Quotes!\n\n\n\nNote that the value for the --name option is in quotes. If you try to use dx find data without using quotes, it will not return anything."
   },
   {
     "objectID": "index.html#xargs",
     "href": "index.html#xargs",
     "title": "Running Batch Jobs on the DNAnexus Platform",
     "section": "xargs",
-    "text": "xargs\n\n\n\n\n\n\n\n\n\nLet’s talk about xargs. This is a command that will take a list of input, and execute a subshell command for each element in the list.\nWhen we put together xargs with dx find data, we can list the file ids of each file:\n\ndx find data --brief --name \"*.bam\" | \\\n  xargs -I% sh -c \"echo 'file: %'\"\n\nThis produces the output:\nfile: project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGzj0x05b66kqQv51011q\nfile: project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGpj0x05xKxZ42QPqZkJY\nfile: project-GJ496B00FZfxPV5VG36FybvY:file-BQbXVY0093Jk1KVY1J082y7v\nfile: project-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV"
+    "text": "xargs\n\n\n\n\n\n\n\n\n\nLet’s talk about xargs. This is a command that will take a list of input, and execute a subshell command for each element in the list.\nWhen we put together xargs with dx find data, we can list the file ids of each file:\n\ndx find data --brief --name \"*.bam\" | \\\n  xargs -I% sh -c \"echo 'file: %'\"\n\nThis produces the output:\nfile: project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGzj0x05b66kqQv51011q\nfile: project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGpj0x05xKxZ42QPqZkJY\nfile: project-GJ496B00FZfxPV5VG36FybvY:file-BQbXVY0093Jk1KVY1J082y7v\nfile: project-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV\n\n\n\n\n\n\nxargs and quotes\n\n\n\nWe’ll use"
   },
   {
     "objectID": "index.html#dx-run",
     "href": "index.html#dx-run",
     "title": "Running Batch Jobs on the DNAnexus Platform",
     "section": "dx run",
-    "text": "dx run\n\n\n\n\n\n\n\n\n\nLet’s first talk about dx run and running a special app on the platform called Swiss Army Knife. This is a general purpose app for genomics and bioinformatics work. It contains a lot of the utilities that you are used to, such as PLINK and bcftools. We’ll put a link in the description to the documentation.\nWe can start running swiss army knife with dx run:\n\n'dx run app-swiss-army-knife \\\n  -iin=\"%\" \\\n  -icmd=\"sambamba index \\${in_name}\"'"
+    "text": "dx run\n\n\n\n\n\n\n\n\n\nLet’s first talk about dx run and running a special app on the platform called Swiss Army Knife. This is a general purpose app for genomics and bioinformatics work. It contains a lot of the utilities that you are used to, such as PLINK and bcftools. We’ll put a link in the description to the documentation.\nWe can run a single job with Swiss Army Knife using a dx run statement.\n\ndx run app-swiss-army-knife \\\n  -iin=\"/data/NA12878.bam\" \\\n  -icmd=\"sambamba index \\${in_name}\"\n\n\n\n\n\n\n\nInputs to an App: -i\n\n\n\nNote that the inputs to Swiss army knife and other apps on the platform are specified with a single dash (-iin or -icmd), rather than the double dash you may be used to for other command line options.\n\n\nWhen we integrate it into our recipe, we’ll switch out our file name (/data/NA12878.bam) with our placeholder (%). We’ll also enclose our statement with double quotes.\nThe last thing to note is that in our cmd input, we escape our $ for our variable: \\$. This will evaluate to $in_name by our bash shell, which can then be used by Swiss Army Knife.\n\n'dx run app-swiss-army-knife \\\n  -iin=\"%\" \\\n  -icmd=\"sambamba index \\${in_name}\"'\n\n\n\n\n\n\n\nBash Helper Variables\n\n\n\nWhen we specify inputs for an app, there are a number of helper variables we can use. For our one input -iin=\"data/NA12878.bam\", this is what these helper variables contain:\n\n\n\nBash Variable\nValue\nNotes\n\n\n\n\n$in\ndata/NA12878.bam\nLocation in project storage\n\n\n$in_path\n~/NA12878.bam\nLocation in worker storage\n\n\n$in_name\nNA12878.bam\nFile name (without folder path)\n\n\n$in_prefix\nNA12878\nFile name without the suffix\n\n\n\nThese variables are super helpful when specifying file names. $_prefix is especially helpful when we want to name our output with a different extension, but the same prefix (such as NA12845.bam and NA12845.bai)."
   },
   {
     "objectID": "index.html#what-you-learned",
@@ -54,5 +54,19 @@
     "title": "About",
     "section": "",
     "text": "About this site\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "index.html#putting-it-all-together",
+    "href": "index.html#putting-it-all-together",
+    "title": "Running Batch Jobs on the DNAnexus Platform",
+    "section": "Putting it All Together",
+    "text": "Putting it All Together\n\n\n\n\n\n\n\n\n\nLet’s put everything together. We can now see what each piece of the recipe does.\n\ndx find data --brief --name *.bam | \\\n  xargs -I% sh -c \\ \n  'dx run app-swiss-army-knife \\\n   -iin=\"%\" -icmd=\"sambamba index \\${in_name}\"'"
+  },
+  {
+    "objectID": "index.html#what-your-learned",
+    "href": "index.html#what-your-learned",
+    "title": "Running Batch Jobs on the DNAnexus Platform",
+    "section": "What Your Learned",
+    "text": "What Your Learned\n\nA basic recipe for batch processing\nThe role of dx find data, xargs and dx run in this recipe"
   }
 ]

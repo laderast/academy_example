@@ -144,7 +144,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#dx-find-data" id="toc-dx-find-data" class="nav-link" data-scroll-target="#dx-find-data"><code>dx find data</code></a></li>
   <li><a href="#xargs" id="toc-xargs" class="nav-link" data-scroll-target="#xargs"><code>xargs</code></a></li>
   <li><a href="#dx-run" id="toc-dx-run" class="nav-link" data-scroll-target="#dx-run"><code>dx run</code></a></li>
-  <li><a href="#what-you-learned" id="toc-what-you-learned" class="nav-link" data-scroll-target="#what-you-learned">What You Learned</a></li>
+  <li><a href="#putting-it-all-together" id="toc-putting-it-all-together" class="nav-link" data-scroll-target="#putting-it-all-together">Putting it All Together</a></li>
+  <li><a href="#what-your-learned" id="toc-what-your-learned" class="nav-link" data-scroll-target="#what-your-learned">What Your Learned</a></li>
   </ul>
 </nav>
     </div>
@@ -202,6 +203,12 @@ Question
 </div>
 </div>
 </div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dx</span> find data <span class="at">--brief</span> <span class="at">--name</span> <span class="pp">*</span>.bam <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xargs</span> <span class="at">-I%</span> sh <span class="at">-c</span> <span class="dt">\ </span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">'dx run app-swiss-army-knife \</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="st">   -iin="%" -icmd="sambamba index \${in_name}"'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <div class="cell" data-fig-width="5">
 <div class="cell-output-display">
 <div>
@@ -232,16 +239,29 @@ Question
 </div>
 </div>
 </div>
-<p>We can use <code>dx find data</code> to generate lists of file ids to process using the <code>--brief</code> option.</p>
+<p>We can use <code>dx find data</code> to generate lists of file ids to process using the <code>--brief</code> option. If we don’t use the <code>--brief</code> option, then the output is much like <code>dx ls</code>: a directory listing with additional information.</p>
 <p>For example, if we run:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dx</span> find data <span class="at">--brief</span> <span class="at">--name</span> <span class="pp">*</span>.bam</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dx</span> find data <span class="at">--brief</span> <span class="at">--name</span> <span class="st">"*.bam"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>It produces the output:</p>
 <pre><code>project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGzj0x05b66kqQv51011q
 project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGpj0x05xKxZ42QPqZkJY
 project-GJ496B00FZfxPV5VG36FybvY:file-BQbXVY0093Jk1KVY1J082y7v
 project-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV</code></pre>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Don’t Forget the Quotes!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note that the value for the <code>--name</code> option is in quotes. If you try to use <code>dx find data</code> without using quotes, it will not return anything.</p>
+</div>
+</div>
 </section>
 <section id="xargs" class="level2">
 <h2 class="anchored" data-anchor-id="xargs"><code>xargs</code></h2>
@@ -257,14 +277,27 @@ project-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV</code></pre>
 <p>Let’s talk about <code>xargs</code>. This is a command that will take a list of input, and execute a subshell command for each element in the list.</p>
 <p>When we put together <code>xargs</code> with <code>dx find data</code>, we can list the file ids of each file:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dx</span> find data <span class="at">--brief</span> <span class="at">--name</span> <span class="st">"*.bam"</span> <span class="kw">|</span> <span class="dt">\</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xargs</span> <span class="at">-I%</span> sh <span class="at">-c</span> <span class="st">"echo 'file: %'"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dx</span> find data <span class="at">--brief</span> <span class="at">--name</span> <span class="st">"*.bam"</span> <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xargs</span> <span class="at">-I%</span> sh <span class="at">-c</span> <span class="st">"echo 'file: %'"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This produces the output:</p>
 <pre><code>file: project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGzj0x05b66kqQv51011q
 file: project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGpj0x05xKxZ42QPqZkJY
 file: project-GJ496B00FZfxPV5VG36FybvY:file-BQbXVY0093Jk1KVY1J082y7v
 file: project-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV</code></pre>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<code>xargs</code> and quotes
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We’ll use</p>
+</div>
+</div>
 </section>
 <section id="dx-run" class="level2">
 <h2 class="anchored" data-anchor-id="dx-run"><code>dx run</code></h2>
@@ -278,15 +311,80 @@ file: project-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV</code></pre
 </div>
 </div>
 <p>Let’s first talk about <code>dx run</code> and running a special app on the platform called Swiss Army Knife. This is a general purpose app for genomics and bioinformatics work. It contains a lot of the utilities that you are used to, such as PLINK and bcftools. We’ll put a link in the description to the documentation.</p>
-<p>We can start running swiss army knife with <code>dx run</code>:</p>
+<p>We can run a single job with Swiss Army Knife using a <code>dx run</code> statement.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="st">'dx run app-swiss-army-knife \</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">  -iin="%" \</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">  -icmd="sambamba index \${in_name}"'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dx</span> run app-swiss-army-knife <span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-iin</span><span class="op">=</span><span class="st">"/data/NA12878.bam"</span> <span class="dt">\</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-icmd</span><span class="op">=</span><span class="st">"sambamba index </span><span class="dt">\$</span><span class="st">{in_name}"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Inputs to an App: <code>-i</code>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note that the inputs to Swiss army knife and other apps on the platform are specified with a single dash (<code>-iin</code> or <code>-icmd</code>), rather than the double dash you may be used to for other command line options.</p>
+</div>
+</div>
+<p>When we integrate it into our recipe, we’ll switch out our file name (<code>/data/NA12878.bam</code>) with our placeholder (<code>%</code>). We’ll also enclose our statement with double quotes.</p>
+<p>The last thing to note is that in our <code>cmd</code> input, we escape our <code>$</code> for our variable: <code>\$</code>. This will evaluate to <code>$in_name</code> by our bash shell, which can then be used by Swiss Army Knife.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="st">'dx run app-swiss-army-knife \</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="st">  -iin="%" \</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="st">  -icmd="sambamba index \${in_name}"'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Bash Helper Variables
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When we specify inputs for an app, there are a number of helper variables we can use. For our one input <code>-iin="data/NA12878.bam"</code>, this is what these helper variables contain:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Bash Variable</th>
+<th>Value</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>$in</code></td>
+<td><code>data/NA12878.bam</code></td>
+<td>Location in project storage</td>
+</tr>
+<tr class="even">
+<td><code>$in_path</code></td>
+<td><code>~/NA12878.bam</code></td>
+<td>Location in worker storage</td>
+</tr>
+<tr class="odd">
+<td><code>$in_name</code></td>
+<td><code>NA12878.bam</code></td>
+<td>File name (without folder path)</td>
+</tr>
+<tr class="even">
+<td><code>$in_prefix</code></td>
+<td><code>NA12878</code></td>
+<td>File name without the suffix</td>
+</tr>
+</tbody>
+</table>
+<p>These variables are super helpful when specifying file names. <code>$_prefix</code> is especially helpful when we want to name our output with a different extension, but the same prefix (such as <code>NA12845.bam</code> and <code>NA12845.bai</code>).</p>
+</div>
 </div>
 </section>
-<section id="what-you-learned" class="level2">
-<h2 class="anchored" data-anchor-id="what-you-learned">What You Learned</h2>
+<section id="putting-it-all-together" class="level2">
+<h2 class="anchored" data-anchor-id="putting-it-all-together">Putting it All Together</h2>
 <div class="cell">
 <div class="cell-output-display">
 <div class="vembedr">
@@ -296,6 +394,16 @@ file: project-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV</code></pre
 </div>
 </div>
 </div>
+<p>Let’s put everything together. We can now see what each piece of the recipe does.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dx</span> find data <span class="at">--brief</span> <span class="at">--name</span> <span class="pp">*</span>.bam <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xargs</span> <span class="at">-I%</span> sh <span class="at">-c</span> <span class="dt">\ </span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">'dx run app-swiss-army-knife \</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">   -iin="%" -icmd="sambamba index \${in_name}"'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="what-your-learned" class="level2">
+<h2 class="anchored" data-anchor-id="what-your-learned">What Your Learned</h2>
 <ul>
 <li>A basic recipe for batch processing</li>
 <li>The role of <code>dx find data</code>, <code>xargs</code> and <code>dx run</code> in this recipe</li>
