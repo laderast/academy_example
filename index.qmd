@@ -1,0 +1,126 @@
+---
+title: "Running Batch Jobs on the DNAnexus Platform"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+:::{.callout}
+## Question
+
+How do you run batch jobs on the DNAnexus Platform?
+:::
+
+## Learning Objectives
+
+After this lesson, you should be able to: 
+
+- **Explain** a basic recipe for batch processing on the DNAnexus Platform
+- **Demonstrate** the utility of `dx find data`
+- **Demonstrate** `xargs` and use it to process multiple files.
+- **Demonstrate** `dx run` and use it to process BAM files with the Swiss Army Knife App
+
+## The Basic Recipe
+
+```{r}
+#| echo: false
+vembedr::embed_youtube("MBFXgfzYCjw")
+```
+
+```{mermaid}
+%%| fig-width: 5
+%%| fig-cap: The Basic Recipe for Batch Processing
+graph LR;
+  A[List files </br> using `dx data`] --> F{"|"}
+  F --> E[`xargs` sh -c]
+  E --> B[`dx run` </br> on file1];
+  E --> C[`dx run` </br> on file2];
+  E --> D[`dx run` </br> on file3];
+```
+
+Let's learn about batch processing on the DNAnexus platform. When we talk about batch processing, we'll process files within a project on the platform. We can cycle through a set of BAM files and filter out variants, for example. 
+
+Today, we'll talk about a straightforward way to process files: using `dx find data` to find a list of data files with our criteria, and then use dx run with an app called `Swiss army knife.`
+
+## `dx find data`
+
+```{r}
+#| echo: false
+vembedr::embed_youtube("BuIPCTj9gjs")
+```
+
+We can use `dx find data` to generate lists of file ids to process using the `--brief` option.
+
+For example, if we run: 
+
+```{bash}
+#| eval: false
+#| echo: true
+dx find data --brief --name *.bam
+```
+
+It produces the output:
+
+```
+project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGzj0x05b66kqQv51011q
+project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGpj0x05xKxZ42QPqZkJY
+project-GJ496B00FZfxPV5VG36FybvY:file-BQbXVY0093Jk1KVY1J082y7v
+project-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV
+```
+
+## `xargs`
+
+```{r echo=FALSE}
+#| echo: false
+vembedr::embed_youtube("KUHY21QCp04")
+```
+
+Let's talk about `xargs`. This is a command that will take a list of input, and execute a subshell command for each element in the list.
+
+When we put together `xargs` with `dx find data`, we can list the file ids of each file:
+
+```{bash}
+#| eval: false
+#| echo: true
+dx find data --brief --name "*.bam" | \
+  xargs -I% sh -c "echo 'file: %'"
+```
+
+This produces the output:
+
+```
+file: project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGzj0x05b66kqQv51011q
+file: project-GJ496B00FZfxPV5VG36FybvY:file-BZ9YGpj0x05xKxZ42QPqZkJY
+file: project-GJ496B00FZfxPV5VG36FybvY:file-BQbXVY0093Jk1KVY1J082y7v
+file: project-GJ496B00FZfxPV5VG36FybvY:file-FpQKQk00FgkGV3Vb3jJ8xqGV
+```
+
+## `dx run`
+
+```{r echo=FALSE}
+#| echo: false
+vembedr::embed_youtube("wXcr0AOxdlw")
+```
+
+Let's first talk about `dx run` and running a special app on the platform called Swiss Army Knife. This is a general purpose app for genomics and bioinformatics work. It contains a lot of the utilities that you are used to, such as PLINK and bcftools. We'll put a link in the description to the documentation.
+
+We can start running swiss army knife with `dx run`:
+
+```{bash}
+#| eval: false
+#| echo: true
+'dx run app-swiss-army-knife \
+  -iin="%" \
+  -icmd="sambamba index \${in_name}"'
+```
+
+## What You Learned
+
+```{r}
+#| echo: false
+vembedr::embed_youtube("vjVS8QLDhAw")
+```
+
+- A basic recipe for batch processing
+- The role of `dx find data`, `xargs` and `dx run` in this recipe
